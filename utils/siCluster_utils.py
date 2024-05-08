@@ -41,7 +41,7 @@ class AUGLoss(nn.Module):
         b = b*b
         b = b.sum(1)
         b = torch.sqrt(b)
-        return b.sum()
+        return b.sum() # (batch_size,N)->(1)
 
 # Below codes are from Deep Clustering for Unsupervised Learning of Visual Features github code        
 def preprocess_features(npdata, pca=256):
@@ -49,16 +49,16 @@ def preprocess_features(npdata, pca=256):
     npdata =  npdata.astype('float32')
 
     # Apply PCA-whitening with Faiss
-    mat = faiss.PCAMatrix (ndim, pca, eigen_power=-0.5)
+    mat = faiss.PCAMatrix (ndim, pca, eigen_power=-0.5) #eigen_power=-0.5 : whitening
     mat.train(npdata)
     assert mat.is_trained
-    npdata = mat.apply_py(npdata)
+    npdata = mat.apply_py(npdata) # (b,N)->(b,pca=256)
 
     # L2 normalization
-    row_sums = np.linalg.norm(npdata, axis=1)
-    npdata = npdata / row_sums[:, np.newaxis]
+    row_sums = np.linalg.norm(npdata, axis=1) #calculate l2norm of each row.(b,pca)->(b,)
+    npdata = npdata / row_sums[:, np.newaxis] # b,pca / b,1 -> b,pca
 
-    return npdata
+    return npdata # b,N->b,pca
 
 def cluster_assign(images_lists, dataset):
     assert images_lists is not None
